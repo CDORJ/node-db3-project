@@ -81,7 +81,7 @@ router.get('/:scheme_id', checkSchemeId, (req, res, next) => {
     }
   ]
 */
-router.get('/:scheme_id/steps', checkSchemeId, (req, res, next) => {
+router.get('/:scheme_id/steps', /* checkSchemeId, */ (req, res, next) => {
   const { scheme_id } = req.params
 
   Schemes.findSteps(scheme_id)
@@ -140,12 +140,6 @@ router.post('/:scheme_id/steps', checkSchemeId, validateStep, (req, res, next) =
     .catch(next)
 })
 
-router.use((err, req, res, next) => { // eslint-disable-line
-  res.status(500).json({
-    sageAdvice: 'Finding the real error is 90% of the bug fix',
-    error: err.message,
-    stack: err.stack,
-  })
-})
+
 
 module.exports = router
