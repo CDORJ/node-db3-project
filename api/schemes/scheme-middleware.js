@@ -9,14 +9,14 @@ const Scheme = require("./scheme-model.js");
   }
 */
 const checkSchemeId = async (req, res, next) => {
-  const { id } = req.params;
+  const { scheme_id } = req.params;
   try {
-    const scheme = await Scheme.findById(id);
+    const scheme = await Scheme.findById(scheme_id);
     req.scheme = scheme;
     next();
   } catch (err) {
     err.status = 404;
-    err.message = `${id} is not a valid id`;
+    err.message = `${scheme_id} is not a valid id`;
     next(err);
   }
 };

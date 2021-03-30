@@ -26,8 +26,18 @@ async function find() {
   */
 }
 
-function findById(id) {
-  return db("schemes").where({ id }).first();
+async function findById(scheme_id) {
+  return await db("schemes as sc")
+    .where({ scheme_id })
+    .join("steps as st", "sc.scheme_id", "st.scheme_id")
+    .select(
+      "sc.scheme_id",
+      "sc.scheme_name",
+      "st.step_id",
+      "st.step_number",
+      "st.instructions"
+    )
+    .orderBy("st.step_number");
   // EXERCISE B
   /*
     1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
@@ -96,11 +106,12 @@ function findById(id) {
   */
 }
 
-function findSteps(id) {
-  return db("steps as s")
-    .join("schemes as sc", "sc.scheme_id", "s.step_id")
-    .select("s.step_id", "s.step_number", "s.instructions", "sc.scheme_name")
-    .where({ scheme_id: id });
+async function findSteps(scheme_id) {
+  return await db("schemes as sc")
+    .where({ scheme_id })
+    .select("st.step_id", "sc.scheme_name", "st.step_number", "st.instructions")
+    .join("steps as st", "sc.scheme_id", "st.scheme_id")
+    .orderBy("st.step_number");
   // EXERCISE C
   /*
     1C- Build a query in Knex that returns the following data.
