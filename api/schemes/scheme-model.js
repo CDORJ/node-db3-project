@@ -28,7 +28,7 @@ async function find() {
 
 async function findById(scheme_id) {
   return await db("schemes as sc")
-    .where({ scheme_id })
+    .where({ "st.scheme_id": scheme_id })
     .join("steps as st", "sc.scheme_id", "st.scheme_id")
     .select(
       "sc.scheme_id",
@@ -108,8 +108,8 @@ async function findById(scheme_id) {
 
 async function findSteps(scheme_id) {
   return await db("schemes as sc")
-    .where({ scheme_id })
-    .select("st.step_id", "sc.scheme_name", "st.step_number", "st.instructions")
+    .where({ "sc.scheme_id": scheme_id })
+    .select("st.step_id", "st.step_number", "st.instructions", "sc.scheme_name")
     .join("steps as st", "sc.scheme_id", "st.scheme_id")
     .orderBy("st.step_number");
   // EXERCISE C
@@ -145,14 +145,28 @@ async function add(scheme) {
   */
 }
 
-function addStep(scheme_id, step) {
-  // EXERCISE E
-  /*
+async function addStep(scheme_id, steps) {
+  const result = await db("steps as st")
+    .where({ "sc.scheme_id": scheme_id })
+    .insert(steps)
+    .join("schemes as sc", "sc.scheme_id", "st.scheme_id")
+    .select("st.step_id", "st.step_number", "st.instructions", "sc.scheme_name")
+    .orderBy("st.step_number");
+
+  return await findById(scheme_id);
+}
+
+// EXERCISE E
+/*
     1E- This function adds a step to the scheme with the given `scheme_id`
     and resolves to _all the steps_ belonging to the given `scheme_id`,
     including the newly created one.
+      
+      "step_id": 12,
+      "step_number": 1,
+      "instructions": "quest and quest some more",
+      "scheme_name": "Find the Holy Grail"
   */
-}
 
 module.exports = {
   find,
