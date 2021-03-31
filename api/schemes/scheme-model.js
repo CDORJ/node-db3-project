@@ -1,8 +1,8 @@
 const db = require("../../data/db-config.js");
 
 async function find() {
-  return await db("steps as st")
-    .join("schemes as sc", "sc.scheme_id", "st.scheme_id")
+  return await db("schemes as sc")
+    .leftJoin("steps as st", "sc.scheme_id", "st.scheme_id")
     .select("sc.scheme_id", "sc.scheme_name")
     .count("st.step_id", { as: "number of steps" })
     .groupBy("sc.scheme_id")
@@ -146,16 +146,11 @@ async function add(scheme) {
 }
 
 async function addStep(scheme_id, steps) {
-  const result = await db("steps as st")
-    .where({ "sc.scheme_id": scheme_id })
-    .insert(steps)
-    .join("schemes as sc", "sc.scheme_id", "st.scheme_id")
-    .select("st.step_id", "st.step_number", "st.instructions", "sc.scheme_name")
-    .orderBy("st.step_number");
+  const newStep = { scheme_id, ...steps };
+  await db("steps as st").insert(newStep);
 
-  return await findById(scheme_id);
+  return findSteps(scheme_id);
 }
-
 // EXERCISE E
 /*
     1E- This function adds a step to the scheme with the given `scheme_id`
