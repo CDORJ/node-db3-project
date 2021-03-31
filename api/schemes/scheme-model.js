@@ -19,7 +19,9 @@ async function findById(scheme_id) {
       "st.step_id",
       "st.step_number",
       "st.instructions"
-    );
+    )
+    .groupBy("st.step_number")
+    .orderBy("st.step_number");
   const newObj = {
     scheme_id: scheme[0].scheme_id,
     scheme_name: scheme[0].scheme_name,
