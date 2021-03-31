@@ -7,94 +7,37 @@ async function find() {
     .count("st.step_id", { as: "number of steps" })
     .groupBy("sc.scheme_id")
     .orderBy("sc.scheme_id");
-  // EXERCISE A
-  /*
-    1A- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`.
-    What happens if we change from a LEFT join to an INNER join?
-
-      SELECT
-          sc.*,
-          count(st.step_id) as number_of_steps
-      FROM schemes as sc
-      LEFT JOIN steps as st
-          ON sc.scheme_id = st.scheme_id
-      GROUP BY sc.scheme_id
-      ORDER BY sc.scheme_id ASC;
-
-    2A- When you have a grasp on the query go ahead and build it in Knex.
-    Return from this function the resulting dataset.
-  */
 }
 
 async function findById(scheme_id) {
-  return await db("schemes as sc")
-    .where({ "st.scheme_id": scheme_id })
-    .join("steps as st", "sc.scheme_id", "st.scheme_id")
+  const scheme = await db("schemes as sc")
+    .where({ "sc.scheme_id": scheme_id })
+    .leftJoin("steps as st", "sc.scheme_id", "st.scheme_id")
     .select(
       "sc.scheme_id",
       "sc.scheme_name",
       "st.step_id",
       "st.step_number",
       "st.instructions"
-    )
-    .orderBy("st.step_number");
+    );
+  const newObj = {
+    scheme_id: scheme[0].scheme_id,
+    scheme_name: scheme[0].scheme_name,
+    steps:
+      scheme[0].step_id !== null
+        ? scheme.map((step) => {
+            return {
+              step_number: step.step_number,
+              step_id: step.step_id,
+              instructions: step.instructions,
+            };
+          })
+        : [],
+  };
+  return newObj;
   // EXERCISE B
   /*
-    1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
 
-      SELECT
-          sc.scheme_name,
-          st.*
-      FROM schemes as sc
-      LEFT JOIN steps as st
-          ON sc.scheme_id = st.scheme_id
-      WHERE sc.scheme_id = 1
-      ORDER BY st.step_number ASC;
-
-    2B- When you have a grasp on the query go ahead and build it in Knex
-    making it parametric: instead of a literal `1` you should use `scheme_id`.
-
-    3B- Test in Postman and see that the resulting data does not look like a scheme,
-    but more like an array of steps each including scheme information:
-
-      [
-        {
-          "scheme_id": 1,
-          "scheme_name": "World Domination",
-          "step_id": 2,
-          "step_number": 1,
-          "instructions": "solve prime number theory"
-        },
-        {
-          "scheme_id": 1,
-          "scheme_name": "World Domination",
-          "step_id": 1,
-          "step_number": 2,
-          "instructions": "crack cyber security"
-        },
-        // etc
-      ]
-
-    4B- Using the array obtained and vanilla JavaScript, create an object with
-    the structure below, for the case _when steps exist_ for a given `scheme_id`:
-
-      {
-        "scheme_id": 1,
-        "scheme_name": "World Domination",
-        "steps": [
-          {
-            "step_id": 2,
-            "step_number": 1,
-            "instructions": "solve prime number theory"
-          },
-          {
-            "step_id": 1,
-            "step_number": 2,
-            "instructions": "crack cyber security"
-          },
-          // etc
-        ]
-      }
 
     5B- This is what the result should look like _if there are no steps_ for a `scheme_id`:
 
