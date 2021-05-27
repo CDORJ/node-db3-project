@@ -95,16 +95,16 @@ async function findById(scheme_id) {
   */
 
   const scheme = await db("schemes as sc")
+    .where({ "sc.scheme_id": scheme_id })
     .leftJoin("steps as st", "sc.scheme_id", "=", "st.scheme_id")
     .select("sc.scheme_name", "st.*")
-    .where({ "sc.scheme_id": scheme_id })
     .orderBy("st.step_number", "asc");
 
   if (!scheme[0]) {
     return scheme;
   } else if (scheme[0].step_id === null) {
     return {
-      scheme_id: scheme[0].scheme_id,
+      scheme_id,
       scheme_name: scheme[0].scheme_name,
       steps: [],
     };
@@ -179,7 +179,7 @@ async function add(scheme) {
     };
   } else {
     const [id] = await db("schemes").insert(scheme);
-    return { id, ...scheme };
+    return findById(id);
   }
 }
 
@@ -193,18 +193,20 @@ async function addStep(scheme_id, step) {
     "st.instructions": step.instructions,
   });
 
-  if (matchNumber && matchInstructions){
-    return { message: "That step_number and those instructions already exist for that scheme" };
+  if (matchNumber && matchInstructions) {
+    return {
+      message:
+        "That step_number and those instructions already exist for that scheme",
+    };
   } else if (matchNumber) {
     return { message: "That step_number already exists for that scheme" };
   } else if (matchInstructions) {
     return { message: "Those instructions already exist for that scheme" };
   } else {
     const newStep = { scheme_id, ...step };
-    await db("steps").insert(newStep).where({});
+    await db("steps").insert(newStep);
     return findSteps(scheme_id);
   }
-  // console.log(scheme_id, step);
   // EXERCISE E
   /*
     1E- This function adds a step to the scheme with the given `scheme_id`
