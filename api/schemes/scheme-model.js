@@ -94,7 +94,7 @@ async function findById(scheme_id) {
       }
   */
 
-  const scheme = await db("schemes as sc")
+  /* const scheme = await db("schemes as sc")
     .where({ "sc.scheme_id": scheme_id })
     .leftJoin("steps as st", "sc.scheme_id", "=", "st.scheme_id")
     .select("sc.scheme_name", "st.*")
@@ -122,7 +122,30 @@ async function findById(scheme_id) {
       scheme_name: scheme[0].scheme_name,
       steps: stepsArray,
     };
-  }
+  } */
+
+  const withSteps = await db("schemes as sc")
+    .leftJoin("steps as st", "sc.scheme_id", "st.scheme_id")
+    .where("sc.scheme_id", scheme_id)
+    .orderBy("st.step_number", "asc");
+
+  if (!withSteps.length) return null;
+
+  const scheme = {
+    scheme_id: +scheme_id,
+    scheme_name: withSteps[0].scheme_name,
+    steps: [],
+  };
+
+  withSteps.forEach((step) => {
+    return scheme.steps.push({
+      step_id: step.step_id,
+      step_number: step.step_number,
+      instructions: step.instructions,
+    });
+  });
+
+  return { ...scheme, steps: scheme.steps.filter((st) => st.step_id) };
 }
 
 function findSteps(scheme_id) {
